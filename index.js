@@ -16,7 +16,7 @@ const productSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   image: { type: String, required: true },
-  sellerSKU: { type: String, unique: true, required: true },
+  sellerSku: { type: String, unique: true, required: true },
   color: { type: String, required: true },
   size: { type: String, enum: ["large", "medium", "small"], required: true },
   price: { type: Number, required: true },
@@ -26,18 +26,24 @@ const productSchema = new Schema({
     enum: ["stock-in", "stock-out"],
     required: true,
   },
-  category: { type: String, enum: ["men", "women", "common"], required: true },
-  // subCategory: { type: String, enum: ["men", "women","common"], required: true },
+  category: {
+    type: String,
+    enum: ["men", "women", "all wallets & small leather goods", "jewelry"],
+    required: true,
+  },
+  subCategory: { type: String, required: true },
   available: { type: Boolean, required: true },
   version: { type: [String], required: true },
-  // nft:{type:String,required:true},
-  // offprint:{type:String,required:true},
+  nft: { type: Boolean, required: true },
+  offprint: { type: Boolean, required: true },
   packageWeight: { type: Number, required: true },
   dimension: { type: String, required: true },
 });
 
 //product model
 const Product = model("Product", productSchema);
+
+//----------- all api start----------
 
 // get all product api
 const findProducts = async (req, res) => {
@@ -51,15 +57,25 @@ const addProduct = async (req, res) => {
   res.send(product);
 };
 
-//routes
+//get single product by id
+const getSingleProduct = async (req, res) => {
+  const productId = req.params.id;
+  const product = await Product.findById(productId);
+  res.send(product);
+};
+
+//----------- all api end----------
+
+//router setup
 const routes = Router();
 app.use("/api", routes);
 
 // all route
 routes.get("/products", findProducts);
 routes.post("/add-product", addProduct);
+routes.get("/product/:id", getSingleProduct);
 
-//database conect function
+//database connect function
 async function main() {
   try {
     await mongoose.connect(process.env.DATABASE_URL, {
